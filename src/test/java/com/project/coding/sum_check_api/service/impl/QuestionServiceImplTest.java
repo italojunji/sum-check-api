@@ -32,6 +32,12 @@ class QuestionServiceImplTest {
         QuestionServiceImpl.questionNumbersByClientMap.clear();
     }
 
+    //Default successful scenario
+    String clientIp = "192.168.0.1";
+    String question = "Please sum the numbers 0,1,2";
+    Integer answer = 3;
+    int[] questionNumbers = new int[]{0,1,2};
+
     @Test
     void generateNewQuestionWith3Numbers() {
         assertTrue(QuestionServiceImpl.questionNumbersByClientMap.isEmpty());
@@ -39,9 +45,9 @@ class QuestionServiceImplTest {
         when(random.nextInt(Constants.MIN_SIZE,Constants.MAX_SIZE + 1)).thenReturn(3);
         when(random.ints(3, Constants.MIN_NUMBER, Constants.MAX_NUMBER + 1)).thenReturn(IntStream.of(3,4,5));
 
-        String question = service.generateNewQuestion("ipTest");
+        String question = service.generateNewQuestion(clientIp);
 
-        assertTrue(Arrays.equals(new int[]{3, 4, 5}, QuestionServiceImpl.questionNumbersByClientMap.get("ipTest")));
+        assertTrue(Arrays.equals(new int[]{3, 4, 5}, QuestionServiceImpl.questionNumbersByClientMap.get(clientIp)));
         assertEquals("Please sum the numbers 3,4,5", question);
     }
 
@@ -52,9 +58,9 @@ class QuestionServiceImplTest {
         when(random.nextInt(Constants.MIN_SIZE,Constants.MAX_SIZE + 1)).thenReturn(2);
         when(random.ints(2, Constants.MIN_NUMBER, Constants.MAX_NUMBER + 1)).thenReturn(IntStream.of(1,2));
 
-        String question = service.generateNewQuestion("ipTest_2");
+        String question = service.generateNewQuestion(clientIp);
 
-        assertTrue(Arrays.equals(new int[]{1, 2}, QuestionServiceImpl.questionNumbersByClientMap.get("ipTest_2")));
+        assertTrue(Arrays.equals(new int[]{1, 2}, QuestionServiceImpl.questionNumbersByClientMap.get(clientIp)));
         assertEquals("Please sum the numbers 1,2", question);
     }
 
@@ -65,11 +71,11 @@ class QuestionServiceImplTest {
         when(random.nextInt(Constants.MIN_SIZE,Constants.MAX_SIZE + 1)).thenReturn(2, 2);
         when(random.ints(2, Constants.MIN_NUMBER, Constants.MAX_NUMBER + 1)).thenReturn(IntStream.of(1,2), IntStream.of(9,10));
 
-        String question1 = service.generateNewQuestion("ipTest");
-        String question2 = service.generateNewQuestion("ipTest");
+        String question1 = service.generateNewQuestion(clientIp);
+        String question2 = service.generateNewQuestion(clientIp);
 
         assertEquals(1, QuestionServiceImpl.questionNumbersByClientMap.size());
-        assertTrue(Arrays.equals(new int[]{9, 10}, QuestionServiceImpl.questionNumbersByClientMap.get("ipTest")));
+        assertTrue(Arrays.equals(new int[]{9, 10}, QuestionServiceImpl.questionNumbersByClientMap.get(clientIp)));
         assertEquals("Please sum the numbers 1,2", question1);
         assertEquals("Please sum the numbers 9,10", question2);
     }
@@ -98,27 +104,31 @@ class QuestionServiceImplTest {
 
     @Test
     void validateWithSuccess() {
-        QuestionServiceImpl.questionNumbersByClientMap.put("ipTest", new int[]{0,1,2});
+        QuestionServiceImpl.questionNumbersByClientMap.put(clientIp, questionNumbers);
 
         assertDoesNotThrow(() -> {
-            String result = service.validate("ipTest", "Please sum the numbers 0,1,2", 3);
+            String result = service.validate(clientIp, question, answer);
             assertEquals(Constants.SUCCESS_MESSAGE, result);
         });
 
     }
 
     @Test
-    void validateWithInvalidBodyRequestExceptionWhenNumberIsWrong() {
+    void validateWithInvalidBodyRequestExceptionWhenNumericPartPassedInBodyIsOutOfPattern() {
+        question = "Please! sum the numbers: 0,1,2";
+
         Exception exception = assertThrows(InvalidBodyRequestException.class, () -> {
-            service.validate("ipTest", "Please sum the numbers 0,1.,2", 3);
+            service.validate(clientIp, question, answer);
         });
         assertEquals("Invalid request body.", exception.getMessage());
     }
 
     @Test
-    void validateWithInvalidBodyRequestExceptionWhenTextIsWrong() {
+    void validateWithInvalidBodyRequestExceptionWhenPrefixTextPassedInBodyIsOutOfPattern() {
+        question = "Please sum the numbers 0,@1,2.";
+
         Exception exception = assertThrows(InvalidBodyRequestException.class, () -> {
-            service.validate("ipTest", "Please sum the numbers: 0,1,2", 3);
+            service.validate(clientIp, question, answer);
         });
         assertEquals("Invalid request body.", exception.getMessage());
     }
@@ -128,27 +138,40 @@ class QuestionServiceImplTest {
         assertTrue(QuestionServiceImpl.questionNumbersByClientMap.isEmpty());
 
         Exception exception = assertThrows(InvalidQuestionException.class, () -> {
-            service.validate("ipTest", "Please sum the numbers 0,1,2", 3);
+            service.validate(clientIp, question, answer);
         });
         assertEquals("Question is wrong. If you forgot it, please get a new one.", exception.getMessage());
     }
 
     @Test
     void validateWithInvalidQuestionExceptionWhenThereIsNoRequestedQuestionByTheSpecificClient() {
-        QuestionServiceImpl.questionNumbersByClientMap.put("ipTest", new int[]{0,1,2});
+        QuestionServiceImpl.questionNumbersByClientMap.put(clientIp, questionNumbers);
 
+        clientIp = "111.111.1.1";
         Exception exception = assertThrows(InvalidQuestionException.class, () -> {
-            service.validate("ipTest_Specific", "Please sum the numbers 0,1,2", 3);
+            service.validate(clientIp, question, answer);
+        });
+        assertEquals("Question is wrong. If you forgot it, please get a new one.", exception.getMessage());
+    }
+
+    @Test
+    void validateWithInvalidQuestionExceptionWhenTheNumbersOfQuestionAreDifferentFromPreviousRequested() {
+        QuestionServiceImpl.questionNumbersByClientMap.put(clientIp, questionNumbers);
+
+        question = "Please sum the numbers 0,3";
+        Exception exception = assertThrows(InvalidQuestionException.class, () -> {
+            service.validate(clientIp, question, answer);
         });
         assertEquals("Question is wrong. If you forgot it, please get a new one.", exception.getMessage());
     }
 
     @Test
     void validateWithWrongAnswerException() {
-        QuestionServiceImpl.questionNumbersByClientMap.put("ipTest", new int[]{0,1,2});
+        QuestionServiceImpl.questionNumbersByClientMap.put(clientIp, questionNumbers);
 
+        answer = 2;
         Exception exception = assertThrows(WrongAnswerException.class, () -> {
-            service.validate("ipTest", "Please sum the numbers 0,1,2", 2);
+            service.validate(clientIp, question, answer);
         });
         assertEquals("That's wrong. Please try again.", exception.getMessage());
     }

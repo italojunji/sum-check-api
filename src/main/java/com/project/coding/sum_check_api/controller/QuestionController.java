@@ -24,8 +24,8 @@ public class QuestionController {
         return new ResponseEntity<>(question, HttpStatus.OK);
     }
 
-    @PostMapping("/{answer}")
-    public ResponseEntity<String> answerQuestion(@RequestBody String question, @PathVariable Integer answer, HttpServletRequest request) {
+    @PostMapping()
+    public ResponseEntity<String> answerQuestion(@RequestBody String question, @RequestParam Integer answer, HttpServletRequest request) {
         try {
             String success = questionService.validate(request.getRemoteAddr(), question, answer);
             return new ResponseEntity<>(success, HttpStatus.OK);
