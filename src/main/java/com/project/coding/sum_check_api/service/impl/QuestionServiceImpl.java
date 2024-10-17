@@ -5,10 +5,12 @@ import com.project.coding.sum_check_api.exceptions.InvalidQuestionException;
 import com.project.coding.sum_check_api.exceptions.WrongAnswerException;
 import com.project.coding.sum_check_api.service.QuestionService;
 import com.project.coding.sum_check_api.util.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,12 +18,18 @@ import java.util.stream.IntStream;
 @Service
 public class QuestionServiceImpl implements QuestionService {
 
-    private static HashMap<String, int[]> questionNumbersByClientMap = new HashMap<>();
+    public static Map<String, int[]> questionNumbersByClientMap = new HashMap<>();
+
+    private Random random;
+
+    @Autowired
+    public QuestionServiceImpl(Random random) {
+        this.random = random;
+    }
 
     @Override
     public String generateNewQuestion(String ipClient) {
 
-        Random random = new Random();
         int size = random.nextInt(Constants.MIN_SIZE,Constants.MAX_SIZE + 1);
         IntStream stream = random.ints(size, Constants.MIN_NUMBER, Constants.MAX_NUMBER + 1);
         int[] questionNumbers = stream.toArray();
