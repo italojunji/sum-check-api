@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.project.coding</groupId>
 	<artifactId>sum-check-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>sum-check-api</name>
 	<description>Sum check api</description>
 	<url/>

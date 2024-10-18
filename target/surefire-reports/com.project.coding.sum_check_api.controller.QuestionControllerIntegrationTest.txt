@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.project.coding.sum_check_api.controller.QuestionControllerIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.676 s -- in com.project.coding.sum_check_api.controller.QuestionControllerIntegrationTest

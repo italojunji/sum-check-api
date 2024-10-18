@@ -6,7 +6,6 @@ import com.project.coding.sum_check_api.exceptions.WrongAnswerException;
 import com.project.coding.sum_check_api.service.QuestionService;
 import com.project.coding.sum_check_api.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
